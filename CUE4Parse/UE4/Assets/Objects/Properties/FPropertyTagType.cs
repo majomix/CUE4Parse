@@ -7,6 +7,7 @@ using CUE4Parse.GameTypes.FN.Assets.Exports;
 using CUE4Parse.GameTypes.OuterWorlds2.Properties;
 using CUE4Parse.GameTypes.OuterWorlds2.Readers;
 using CUE4Parse.UE4.Assets.Exports;
+using CUE4Parse.UE4.Exceptions;
 using CUE4Parse.UE4.Assets.Readers;
 using CUE4Parse.UE4.Assets.Utils;
 using CUE4Parse.UE4.Objects.UObject;
@@ -116,6 +117,14 @@ public abstract class FPropertyTagType
 
     internal static FPropertyTagType? ReadPropertyTagType(FAssetArchive Ar, string propertyType, FPropertyTagData? tagData, ReadType type, int size = 0)
     {
+        if (Ar.PropertyDepth++ > 64)
+        {
+            Ar.PropertyDepth--;
+            throw new ParserException(Ar, $"Property nesting depth exceeded 64 for type {propertyType}, likely corrupted data");
+        }
+
+        try
+        {
         var tagType = propertyType switch
         {
             "ArrayProperty" => new ArrayProperty(Ar, tagData, type, size),
@@ -177,5 +186,10 @@ public abstract class FPropertyTagType
         }
 #endif
         return tagType;
+        }
+        finally
+        {
+            Ar.PropertyDepth--;
+        }
     }
 }

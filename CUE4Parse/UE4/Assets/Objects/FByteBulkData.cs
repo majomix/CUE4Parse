@@ -54,9 +54,10 @@ public class FByteBulkData
         {
             Ar.Position += Header.ElementCount;
         }
-        else if (BulkDataFlags.HasFlag(BULKDATA_SerializeCompressedZLIB) && !BulkDataFlags.HasFlag(BULKDATA_PayloadInSeperateFile)) // but where is data? inlined or in separate file?
+        else if (BulkDataFlags.HasFlag(BULKDATA_SerializeCompressedZLIB) && !BulkDataFlags.HasFlag(BULKDATA_PayloadInSeperateFile))
         {
-            throw new ParserException(Ar, "TODO: CompressedZlib");
+            // Inline compressed data — skip past the compressed bytes
+            Ar.Position += Header.SizeOnDisk;
         }
 
         if (LazyLoad)
@@ -151,7 +152,11 @@ public class FByteBulkData
         }
         else if (BulkDataFlags.HasFlag(BULKDATA_SerializeCompressedZLIB))
         {
-            throw new ParserException(archive, "TODO: CompressedZlib");
+            var compressedData = new byte[Header.SizeOnDisk];
+            archive.ReadAt(position, compressedData, 0, compressedData.Length);
+            using var dataAr = new FByteArchive("", compressedData, _savedAr.Versions);
+            dataAr.SerializeCompressedNew(data, GetDataSize(), "Zlib", ECompressionFlags.COMPRESS_NoFlags, false, out _);
+            return true;
         }
         else if (BulkDataFlags.HasFlag(BULKDATA_LazyLoadable) || BulkDataFlags.HasFlag(BULKDATA_None))
         {
