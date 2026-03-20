@@ -483,20 +483,16 @@ namespace CUE4Parse.UE4.Readers
                 }
             }
 
-            unsafe
             {
-                var ansiBytes = length <= 1024 ? stackalloc byte[length] : new byte[length];
-                fixed (byte* ansiBytesPtr = ansiBytes)
-                {
-                    Serialize(ansiBytesPtr, length);
+                var ansiBytes = ReadBytes(length);
 #if !NO_STRING_NULL_TERMINATION_VALIDATION
-                    if (ansiBytes[length - 1] != 0)
-                    {
-                        throw new ParserException(this, "Serialized FString is not null terminated");
-                    }
-#endif
-                    return new string((sbyte*) ansiBytesPtr, 0, length - 1);
+                if (ansiBytes[length - 1] != 0)
+                {
+                    throw new ParserException(this, "Serialized FString is not null terminated");
                 }
+#endif
+                // UE4 serializes positive-length strings as UTF-8
+                return Encoding.UTF8.GetString(ansiBytes, 0, length - 1);
             }
         }
 
