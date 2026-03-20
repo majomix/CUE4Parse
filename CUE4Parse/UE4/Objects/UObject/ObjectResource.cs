@@ -247,6 +247,12 @@ namespace CUE4Parse.UE4.Objects.UObject
             ObjectName = Ar.ReadFName();
             ObjectFlags = Ar.Read<uint>();
 
+            if (Ar.Game == EGame.GAME_GearsTactics)
+            {
+                // Coalition fork: PackageGuid is serialized before serial sizes
+                PackageGuid = Ar.Read<FGuid>();
+            }
+
             if (Ar.Ver < EUnrealEngineObjectUE4Version.e64BIT_EXPORTMAP_SERIALSIZES)
             {
                 SerialSize = Ar.Read<int>();
@@ -261,14 +267,15 @@ namespace CUE4Parse.UE4.Objects.UObject
             ForcedExport = Ar.ReadBoolean();
             NotForClient = Ar.ReadBoolean();
             NotForServer = Ar.ReadBoolean();
-            PackageGuid = Ar.Ver < EUnrealEngineObjectUE5Version.REMOVE_OBJECT_EXPORT_PACKAGE_GUID ? Ar.Read<FGuid>() : default;
+            if (Ar.Game != EGame.GAME_GearsTactics)
+                PackageGuid = Ar.Ver < EUnrealEngineObjectUE5Version.REMOVE_OBJECT_EXPORT_PACKAGE_GUID ? Ar.Read<FGuid>() : default;
             IsInheritedInstance = Ar.Ver >= EUnrealEngineObjectUE5Version.TRACK_OBJECT_EXPORT_IS_INHERITED && Ar.ReadBoolean();
             PackageFlags = Ar.Read<uint>();
             NotAlwaysLoadedForEditorGame = Ar.Ver >= EUnrealEngineObjectUE4Version.LOAD_FOR_EDITOR_GAME && Ar.ReadBoolean();
-            IsAsset = Ar.Ver >= EUnrealEngineObjectUE4Version.COOKED_ASSETS_IN_EDITOR_SUPPORT && Ar.ReadBoolean();
+            IsAsset = Ar.Ver >= EUnrealEngineObjectUE4Version.COOKED_ASSETS_IN_EDITOR_SUPPORT && Ar.Game != EGame.GAME_GearsTactics && Ar.ReadBoolean();
             GeneratePublicHash = Ar.Ver >= EUnrealEngineObjectUE5Version.OPTIONAL_RESOURCES && Ar.ReadBoolean();
 
-            if (Ar.Ver >= EUnrealEngineObjectUE4Version.PRELOAD_DEPENDENCIES_IN_COOKED_EXPORTS)
+            if (Ar.Ver >= EUnrealEngineObjectUE4Version.PRELOAD_DEPENDENCIES_IN_COOKED_EXPORTS || Ar.Game == EGame.GAME_GearsTactics)
             {
                 FirstExportDependency = Ar.Read<int>();
                 SerializationBeforeSerializationDependencies = Ar.Read<int>();

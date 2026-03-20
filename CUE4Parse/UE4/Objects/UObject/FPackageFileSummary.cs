@@ -265,6 +265,8 @@ namespace CUE4Parse.UE4.Objects.UObject
                 GatherableTextDataOffset = Ar.Read<int>();
             }
 
+            if (Ar.Game == EGame.GAME_GearsTactics) Ar.Position += 8; // Coalition fork extra summary fields
+
             ExportCount = Ar.Read<int>();
             ExportOffset = Ar.Read<int>();
             ImportCount = Ar.Read<int>();
@@ -431,7 +433,7 @@ namespace CUE4Parse.UE4.Objects.UObject
                 AssetRegistryDataOffset = (int) (AssetRegistryDataOffset ^ 0xEEB2CEC7);
             }
 
-            if (Ar.Game is EGame.GAME_SeaOfThieves or EGame.GAME_GearsOfWar4)
+            if (Ar.Game is EGame.GAME_SeaOfThieves or EGame.GAME_GearsOfWar4 or EGame.GAME_GearsTactics)
             {
                 Ar.Position += 6; // no idea what's going on here.
             }

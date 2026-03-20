@@ -95,7 +95,7 @@ public class FTexturePlatformData
             PackedData = Ar.Read<uint>();
         }
 
-        PixelFormat = Ar.Game == EGame.GAME_GearsOfWar4 ? Ar.ReadFName().Text : Ar.ReadFString();
+        PixelFormat = Ar.Game is EGame.GAME_GearsOfWar4 or EGame.GAME_GearsTactics ? Ar.ReadFName().Text : Ar.ReadFString();
 
         if (Ar.Game == EGame.GAME_DragonQuestXI) Ar.Position += 4;
         if (Ar.Game == EGame.GAME_FinalFantasy7Remake && (PackedData & 0xffff) == 16384)
